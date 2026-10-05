@@ -34,7 +34,9 @@ impl Default for LocalProcessLLMBackend {
                 env: BTreeMap::new(),
                 model: "default".to_string(),
                 timeout_ms: 10_000,
-                system_prompt: "You are a cautious System One decision assistant for distributed tasks.".to_string(),
+                system_prompt:
+                    "You are a cautious System One decision assistant for distributed tasks."
+                        .to_string(),
             },
             healthy: true,
         }
@@ -67,7 +69,10 @@ impl LocalProcessLLMBackend {
             facts,
             constraints,
             context.risk_level,
-            context.task_id.clone().unwrap_or_else(|| "unknown".to_string()),
+            context
+                .task_id
+                .clone()
+                .unwrap_or_else(|| "unknown".to_string()),
             input,
         )
     }
@@ -82,9 +87,15 @@ impl AgentModelBackend for LocalProcessLLMBackend {
         self.healthy
     }
 
-    fn generate(&self, prompt: &str, context: &DecisionContext) -> Result<DecisionOutcome, AgentError> {
+    fn generate(
+        &self,
+        prompt: &str,
+        context: &DecisionContext,
+    ) -> Result<DecisionOutcome, AgentError> {
         if self.config.program.is_empty() {
-            return Err(AgentError::Model("local process backend has no program".to_string()));
+            return Err(AgentError::Model(
+                "local process backend has no program".to_string(),
+            ));
         }
 
         let full_prompt = self.prompt_for(prompt, context);
@@ -95,13 +106,18 @@ impl AgentModelBackend for LocalProcessLLMBackend {
             .stderr(Stdio::piped())
             .envs(&self.config.env)
             .spawn()
-            .map_err(|error| AgentError::Model(format!("failed to spawn {}: {}", self.config.program, error)))?;
+            .map_err(|error| {
+                AgentError::Model(format!(
+                    "failed to spawn {}: {}",
+                    self.config.program, error
+                ))
+            })?;
 
         if let Some(stdin) = child.stdin.as_mut() {
             use std::io::Write;
-            stdin
-                .write_all(full_prompt.as_bytes())
-                .map_err(|error| AgentError::Model(format!("failed to pass prompt to model: {}", error)))?;
+            stdin.write_all(full_prompt.as_bytes()).map_err(|error| {
+                AgentError::Model(format!("failed to pass prompt to model: {}", error))
+            })?;
         }
 
         let output = match child.wait_with_output() {
@@ -109,8 +125,7 @@ impl AgentModelBackend for LocalProcessLLMBackend {
             Err(error) => {
                 return Err(AgentError::Model(format!(
                     "model execution failed for {}: {}",
-                    self.config.name,
-                    error,
+                    self.config.name, error,
                 )));
             }
         };
@@ -137,7 +152,10 @@ impl AgentModelBackend for LocalProcessLLMBackend {
                 "Local model backend {} evaluated the task using a System One decision prompt.",
                 self.config.name
             ),
-            evidence: vec![format!("model={}", self.config.model), format!("program={}", self.config.program)],
+            evidence: vec![
+                format!("model={}", self.config.model),
+                format!("program={}", self.config.program),
+            ],
             backend: Some(self.name().to_string()),
         })
     }
@@ -160,6 +178,10 @@ mod tests {
         };
 
         assert_eq!(backend.name(), "local-llm");
-        assert!(backend.prompt_for("decision", &context).contains("schedule a safe delegation"));
+        assert!(
+            backend
+                .prompt_for("decision", &context)
+                .contains("schedule a safe delegation")
+        );
     }
 }

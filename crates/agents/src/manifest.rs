@@ -161,7 +161,10 @@ mod tests {
     fn signed_manifest_verifies_and_tampering_is_rejected() {
         let key = SigningKey::from_bytes(&[7; 32]);
         let mut value = manifest(&key);
-        value.signature = key.sign(&value.signing_bytes().unwrap()).to_bytes().to_vec();
+        value.signature = key
+            .sign(&value.signing_bytes().unwrap())
+            .to_bytes()
+            .to_vec();
         assert!(value.verify_signature().is_ok());
 
         value.name.push('!');

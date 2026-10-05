@@ -158,12 +158,18 @@ enum Command {
         #[command(subcommand)]
         command: Option<IdentityCommand>,
     },
-    #[command(about = "Inspect workload manifests and adapter registration", display_order = 13)]
+    #[command(
+        about = "Inspect workload manifests and adapter registration",
+        display_order = 13
+    )]
     Workload {
         #[command(subcommand)]
         command: WorkloadCommand,
     },
-    #[command(about = "Inspect available local training adapters", display_order = 14)]
+    #[command(
+        about = "Inspect available local training adapters",
+        display_order = 14
+    )]
     Adapter {
         #[command(subcommand)]
         command: AdapterCommand,
@@ -1241,16 +1247,9 @@ async fn execute(
             }
         },
         Command::Adapter { command } => match command {
-            AdapterCommand::List => {
-                call_and_print(config, AdminRequest::AdapterList, json).await?
-            }
+            AdapterCommand::List => call_and_print(config, AdminRequest::AdapterList, json).await?,
             AdapterCommand::Inspect { name } => {
-                call_and_print(
-                    config,
-                    AdminRequest::AdapterInspect { name },
-                    json,
-                )
-                .await?
+                call_and_print(config, AdminRequest::AdapterInspect { name }, json).await?
             }
         },
         Command::Jobs { command } => match command {

@@ -209,7 +209,8 @@ impl TrainingWorkloadManifest {
         if self.minimum_workers == 0 || self.maximum_workers < self.minimum_workers {
             return Err(WorkloadError::Invalid {
                 field: "minimum_workers",
-                reason: "minimum_workers must be positive and not exceed maximum_workers".to_string(),
+                reason: "minimum_workers must be positive and not exceed maximum_workers"
+                    .to_string(),
             });
         }
         if self.minimum_ram == 0 {
@@ -300,9 +301,7 @@ impl AdapterMessage {
                 bounded_text(shard_id, "shard_id")?;
                 bounded_text(payload, "payload")?;
             }
-            Self::LoadOptimizerState { artifact_id } => {
-                bounded_text(artifact_id, "artifact_id")?
-            }
+            Self::LoadOptimizerState { artifact_id } => bounded_text(artifact_id, "artifact_id")?,
             Self::TrainWindow { request } => bounded_text(request, "request")?,
             Self::ExportUpdate { .. } => {}
             Self::ImportUpdate { update } => bounded_text(update, "update")?,
@@ -518,11 +517,10 @@ impl LocalAdapterRuntime {
             request_id,
             envelope,
         };
-        let payload = serde_json::to_string(&request)
-            .map_err(|error| WorkloadError::Invalid {
-                field: "request",
-                reason: format!("failed to encode adapter request: {error}"),
-            })?;
+        let payload = serde_json::to_string(&request).map_err(|error| WorkloadError::Invalid {
+            field: "request",
+            reason: format!("failed to encode adapter request: {error}"),
+        })?;
 
         let stdin = self.stdin.as_mut().ok_or_else(|| WorkloadError::Invalid {
             field: "adapter",
@@ -557,12 +555,11 @@ impl LocalAdapterRuntime {
             });
         }
 
-        let response: AdapterResponse = serde_json::from_str(trimmed).map_err(|error| {
-            WorkloadError::Invalid {
+        let response: AdapterResponse =
+            serde_json::from_str(trimmed).map_err(|error| WorkloadError::Invalid {
                 field: "response",
                 reason: format!("failed to decode adapter response: {error}"),
-            }
-        })?;
+            })?;
 
         if response.request_id != request_id {
             return Err(WorkloadError::Invalid {
@@ -591,12 +588,11 @@ impl LocalAdapterRuntime {
         let probe = self.send(AdapterMessage::Probe {
             capability: "training".to_string(),
         })?;
-        let prepared_manifest = serde_json::to_string(manifest).map_err(|error| {
-            WorkloadError::Invalid {
+        let prepared_manifest =
+            serde_json::to_string(manifest).map_err(|error| WorkloadError::Invalid {
                 field: "manifest",
                 reason: format!("failed to encode manifest: {error}"),
-            }
-        })?;
+            })?;
         let prepared = self.send(AdapterMessage::Prepare {
             manifest: prepared_manifest,
         })?;
@@ -618,9 +614,7 @@ impl LocalAdapterRuntime {
                 }
             })?,
         })?;
-        let checkpoint = self.send(AdapterMessage::Checkpoint {
-            generation: 1,
-        })?;
+        let checkpoint = self.send(AdapterMessage::Checkpoint { generation: 1 })?;
 
         let parse_payload = |response: &AdapterResponse| {
             serde_json::from_str::<serde_json::Value>(&response.payload)
@@ -679,7 +673,11 @@ mod tests {
 
     fn example_adapter_path() -> PathBuf {
         let crate_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        crate_root.join("..").join("..").join("examples").join("pytorch_reference_adapter.py")
+        crate_root
+            .join("..")
+            .join("..")
+            .join("examples")
+            .join("pytorch_reference_adapter.py")
     }
 
     #[test]

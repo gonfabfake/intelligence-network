@@ -8,7 +8,7 @@ use crate::{
     SystemOneDecisionEngine,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct AgentRuntime {
     runtime: Arc<Runtime>,
     registry: Arc<Mutex<AgentRegistry>>,
@@ -103,5 +103,13 @@ impl AgentRuntime {
             .map_err(|error| AgentError::Runtime(error.to_string()))?;
 
         Ok(outcome)
+    }
+}
+
+impl std::fmt::Debug for AgentRuntime {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AgentRuntime")
+            .field("default_model", &self.default_model)
+            .finish_non_exhaustive()
     }
 }

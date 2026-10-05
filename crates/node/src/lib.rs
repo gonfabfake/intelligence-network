@@ -1973,14 +1973,21 @@ impl Node {
                 "workloads": [intelligence_workload::builtin_training_workload()],
             })),
             AdminRequest::WorkloadInspect { manifest } => match std::fs::read(&manifest) {
-                Ok(bytes) => match serde_json::from_slice::<intelligence_workload::TrainingWorkloadManifest>(&bytes) {
+                Ok(bytes) => match serde_json::from_slice::<
+                    intelligence_workload::TrainingWorkloadManifest,
+                >(&bytes)
+                {
                     Ok(workload) => match workload.validate() {
                         Ok(()) => AdminResponse::ok(serde_json::json!({ "manifest": workload })),
                         Err(error) => AdminResponse::error(error.to_string()),
                     },
-                    Err(error) => AdminResponse::error(format!("invalid workload manifest: {error}")),
+                    Err(error) => {
+                        AdminResponse::error(format!("invalid workload manifest: {error}"))
+                    }
                 },
-                Err(error) => AdminResponse::error(format!("unable to read workload manifest: {error}")),
+                Err(error) => {
+                    AdminResponse::error(format!("unable to read workload manifest: {error}"))
+                }
             },
             AdminRequest::WorkloadRun {
                 manifest,
@@ -1988,7 +1995,10 @@ impl Node {
                 adapter_args,
                 step,
             } => match std::fs::read(&manifest) {
-                Ok(bytes) => match serde_json::from_slice::<intelligence_workload::TrainingWorkloadManifest>(&bytes) {
+                Ok(bytes) => match serde_json::from_slice::<
+                    intelligence_workload::TrainingWorkloadManifest,
+                >(&bytes)
+                {
                     Ok(workload) => match workload.validate() {
                         Ok(()) => {
                             let runtime_config = intelligence_workload::LocalAdapterRuntimeConfig {
@@ -1997,7 +2007,9 @@ impl Node {
                                 transport: intelligence_workload::LocalAdapterTransport::Stdio,
                                 timeout_ms: 30_000,
                             };
-                            let mut runtime = match intelligence_workload::LocalAdapterRuntime::new(runtime_config) {
+                            let mut runtime = match intelligence_workload::LocalAdapterRuntime::new(
+                                runtime_config,
+                            ) {
                                 Ok(runtime) => runtime,
                                 Err(error) => return AdminResponse::error(error.to_string()),
                             };
@@ -2009,9 +2021,13 @@ impl Node {
                         }
                         Err(error) => AdminResponse::error(error.to_string()),
                     },
-                    Err(error) => AdminResponse::error(format!("invalid workload manifest: {error}")),
+                    Err(error) => {
+                        AdminResponse::error(format!("invalid workload manifest: {error}"))
+                    }
                 },
-                Err(error) => AdminResponse::error(format!("unable to read workload manifest: {error}")),
+                Err(error) => {
+                    AdminResponse::error(format!("unable to read workload manifest: {error}"))
+                }
             },
             AdminRequest::AdapterList => AdminResponse::ok(serde_json::json!({
                 "adapters": intelligence_workload::builtin_adapter_registry(),

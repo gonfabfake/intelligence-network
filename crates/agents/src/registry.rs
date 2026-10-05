@@ -105,12 +105,15 @@ impl AgentRegistry {
     ) -> Vec<&AgentPresence> {
         let mut matches: Vec<&AgentPresence> = self.list();
         matches.retain(|agent| {
-            let matches_role = role_hint
-                .map(|role| agent.role == role)
-                .unwrap_or(true);
+            let matches_role = role_hint.map(|role| agent.role == role).unwrap_or(true);
             let capability_score = required_capabilities
                 .iter()
-                .filter(|capability| agent.capabilities.iter().any(|candidate| candidate == *capability))
+                .filter(|capability| {
+                    agent
+                        .capabilities
+                        .iter()
+                        .any(|candidate| candidate == *capability)
+                })
                 .count();
             matches_role && capability_score == required_capabilities.len()
         });
@@ -126,15 +129,18 @@ impl AgentRegistry {
         let mut best_score = 0usize;
 
         for candidate in self.list() {
-            let matches_role = role_hint
-                .map(|role| candidate.role == role)
-                .unwrap_or(true);
+            let matches_role = role_hint.map(|role| candidate.role == role).unwrap_or(true);
             if !matches_role {
                 continue;
             }
             let score = required_capabilities
                 .iter()
-                .filter(|capability| candidate.capabilities.iter().any(|value| value == *capability))
+                .filter(|capability| {
+                    candidate
+                        .capabilities
+                        .iter()
+                        .any(|value| value == *capability)
+                })
                 .count();
             if score > best_score {
                 best = Some(candidate);

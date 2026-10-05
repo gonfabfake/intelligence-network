@@ -31,6 +31,7 @@ impl AgentRole {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(value: &str) -> Option<Self> {
         match value {
             "planner" => Some(Self::Planner),
@@ -44,6 +45,14 @@ impl AgentRole {
             "general" => Some(Self::General),
             _ => None,
         }
+    }
+}
+
+impl std::str::FromStr for AgentRole {
+    type Err = ();
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::from_str(value).ok_or(())
     }
 }
 

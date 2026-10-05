@@ -1,7 +1,7 @@
 use intelligence_protocol::NodeId;
 use serde::{Deserialize, Serialize};
 
-use crate::{AgentError, AgentPresence, AgentRegistry, AgentRole};
+use crate::{AgentError, AgentRegistry, AgentRole};
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AgentScheduleDecision {
@@ -36,19 +36,25 @@ impl AgentScheduler {
             .find_best_match(required_capabilities, role_hint)
             .ok_or(AgentError::NoSuitableAgent)?;
 
-        let matched_capabilities = required_capabilities
+        let matched_capabilities: Vec<String> = required_capabilities
             .iter()
-            .filter(|capability| candidate.capabilities.iter().any(|value| value == *capability))
+            .filter(|capability| {
+                candidate
+                    .capabilities
+                    .iter()
+                    .any(|value| value == *capability)
+            })
             .cloned()
             .collect();
 
-        let score = matched_capabilities.len() as u32 + match candidate.role {
-            AgentRole::Planner => 5,
-            AgentRole::Researcher => 4,
-            AgentRole::Coder => 4,
-            AgentRole::Verifier => 3,
-            _ => 1,
-        };
+        let score = matched_capabilities.len() as u32
+            + match candidate.role {
+                AgentRole::Planner => 5,
+                AgentRole::Researcher => 4,
+                AgentRole::Coder => 4,
+                AgentRole::Verifier => 3,
+                _ => 1,
+            };
 
         Ok(AgentScheduleDecision {
             agent_id: candidate.agent_id.clone(),

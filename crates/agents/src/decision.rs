@@ -36,7 +36,9 @@ impl Default for DecisionOutcome {
         Self {
             decision: "safe-default".to_string(),
             confidence: 0.5,
-            rationale: "No model backend configured; falling back to a conservative rule-based decision.".to_string(),
+            rationale:
+                "No model backend configured; falling back to a conservative rule-based decision."
+                    .to_string(),
             evidence: Vec::new(),
             backend: None,
         }
@@ -89,7 +91,11 @@ impl SystemOneDecisionEngine {
             };
         }
 
-        let risk_bias = if context.risk_level >= 7 { "defer" } else { "continue" };
+        let risk_bias = if context.risk_level >= 7 {
+            "defer"
+        } else {
+            "continue"
+        };
         let evidence = vec![
             format!("goal={}", context.goal),
             format!("constraints={}", context.constraints.join(" | ")),
@@ -140,7 +146,11 @@ where
         (**self).health()
     }
 
-    fn generate(&self, prompt: &str, context: &DecisionContext) -> Result<DecisionOutcome, AgentError> {
+    fn generate(
+        &self,
+        prompt: &str,
+        context: &DecisionContext,
+    ) -> Result<DecisionOutcome, AgentError> {
         (**self).generate(prompt, context)
     }
 }
@@ -160,7 +170,11 @@ mod tests {
             true
         }
 
-        fn generate(&self, _prompt: &str, context: &DecisionContext) -> Result<DecisionOutcome, AgentError> {
+        fn generate(
+            &self,
+            _prompt: &str,
+            context: &DecisionContext,
+        ) -> Result<DecisionOutcome, AgentError> {
             Ok(DecisionOutcome {
                 decision: "continue".to_string(),
                 confidence: 0.9,
